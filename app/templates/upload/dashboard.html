@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Dashboard - DICOM-AI Upload System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-cloud-upload"></i> Upload DICOM Images</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data" id="uploadForm">
+                    {{ form.hidden_tag() }}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            {{ form.client_id.label(class="form-label") }}
+                            {{ form.client_id(class="form-select") }}
+                            {% if form.client_id.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.client_id.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            {{ form.modality.label(class="form-label") }}
+                            {{ form.modality(class="form-select") }}
+                            {% if form.modality.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.modality.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.patient_reference_id.label(class="form-label") }}
+                        {{ form.patient_reference_id(class="form-control", placeholder="Enter anonymized patient reference ID") }}
+                        {% if form.patient_reference_id.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.patient_reference_id.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">This should be an anonymized identifier, not actual patient PHI.</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        {{ form.dicom_files.label(class="form-label") }}
+                        {{ form.dicom_files(class="form-control", multiple="true", accept=".dcm") }}
+                        {% if form.dicom_files.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in form.dicom_files.errors %}
+                                    <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+                        <small class="text-muted">Select one or more .dcm files (max 50 files, 100MB each)</small>
+                    </div>
+                    
+                    <div id="fileList" class="mb-3"></div>
+                    
+                    <div class="d-grid">
+                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5><i class="bi bi-info-circle"></i> Upload Guidelines</h5>
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li><strong>File Format:</strong> Only .dcm (DICOM) files are accepted</li>
+                    <li><strong>File Size:</strong> Maximum 100MB per file</li>
+                    <li><strong>File Count:</strong> Maximum 50 files per upload session</li>
+                    <li><strong>Validation:</strong> Files are validated for DICOM format and required metadata tags</li>
+                    <li><strong>Processing:</strong> Raw DICOM files are stored along with processed preview images</li>
+                    <li><strong>Audit:</strong> All uploads are logged for compliance and security</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('dicom_files');
+    const fileList = document.getElementById('fileList');
+    
+    fileInput.addEventListener('change', function() {
+        const files = this.files;
+        
+        if (files.length > 0) {
+            let html = '<div class="alert alert-info"><strong>Selected Files:</strong><ul class="mb-0 mt-2">';
+            
+            for (let i = 0; i < files.length; i++) {
+                const fileSize = (files[i].size / (1024 * 1024)).toFixed(2);
+                html += `<li>${files[i].name} (${fileSize} MB)</li>`;
+            }
+            
+            html += '</ul></div>';
+            fileList.innerHTML = html;
+        } else {
+            fileList.innerHTML = '';
+        }
+    });
+});
+</script>
+{% endblock %}
