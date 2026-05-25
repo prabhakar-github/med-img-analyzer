@@ -22,7 +22,7 @@
    ```
    
    ```bash   
-   py -m pip install -r requirements.txt 
+   python -m pip install -r requirements.txt 
    ```
 
 3. **Set up environment variables**
@@ -66,9 +66,9 @@
    ```bash
    python run.py
    ```
-   OR directly initiate FastAPI webserver...
+   OR directly initiate **FastAPI** webserver...
    ```bash   
-   py -m uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+   python -m uvicorn app:app --host 0.0.0.0 --port 5000 --reload
    ```
    
 8. **Access the application**
@@ -131,13 +131,13 @@ med-img-analyzer/
 
 
 **Main Application Modules**
-- app/__init__.py: Creates the FastAPI app, configures session middleware, registers auth/upload routers.
-- app/database.py: Provides async MySQL sessions using SQLAlchemy + aiomysql.
-- app/auth/routes.py: Handles login/logout and session-based operator lookup.
-- app/upload/routes.py: Handles upload dashboard and DICOM file upload workflow.
-- app/storage/minio_client.py: Stores raw DICOM and processed PNG previews in MinIO.
-- app/upload/processors.py: Converts DICOM pixel data into PNG previews.
-- app/upload/validators.py: Validates file extension, size, DICOM tags, and modality.
+- app/__init__.py:  Creates the **FastAPI** app, configures session middleware, registers auth/upload routers.
+- app/database.py:  Provides async **MySQL** sessions using SQLAlchemy + aiomysql.
+- app/auth/routes.py:  Handles **login/logout** and session-based operator lookup.
+- app/upload/routes.py:  Handles **upload** dashboard and DICOM file upload workflow.
+- app/storage/minio_client.py:  **Stores** raw DICOM and processed PNG previews in MinIO.
+- app/upload/processors.py:  **Converts** DICOM pixel data into PNG previews.
+- app/upload/validators.py:  **Validates** file extension, size, DICOM tags, and modality.
 
 
 **Next Steps to Run:**
