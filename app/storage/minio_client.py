@@ -1,8 +1,13 @@
 from minio import Minio
 from minio.error import S3Error
-from flask import current_app
 import hashlib
 import io
+import logging
+
+from app.config import settings
+
+
+logger = logging.getLogger(__name__)
 
 
 class MinIOStorage:
@@ -16,32 +21,32 @@ class MinIOStorage:
         """Initialize MinIO client with configuration"""
         try:
             self.client = Minio(
-                endpoint=current_app.config['MINIO_ENDPOINT'],
-                access_key=current_app.config['MINIO_ACCESS_KEY'],
-                secret_key=current_app.config['MINIO_SECRET_KEY'],
-                secure=current_app.config['MINIO_SECURE']
+                endpoint=settings.MINIO_ENDPOINT,
+                access_key=settings.MINIO_ACCESS_KEY,
+                secret_key=settings.MINIO_SECRET_KEY,
+                secure=settings.MINIO_SECURE
             )
-            current_app.logger.info("MinIO client initialized successfully")
+            logger.info("MinIO client initialized successfully")
         except Exception as e:
-            current_app.logger.error(f"Failed to initialize MinIO client: {e}")
+            logger.error(f"Failed to initialize MinIO client: {e}")
             raise
     
     def ensure_buckets_exist(self):
         """Create buckets if they don't exist"""
         buckets = [
-            current_app.config['MINIO_BUCKET_RAW'],
-            current_app.config['MINIO_BUCKET_PROCESSED']
+            settings.MINIO_BUCKET_RAW,
+            settings.MINIO_BUCKET_PROCESSED
         ]
         
         for bucket in buckets:
             try:
                 if not self.client.bucket_exists(bucket):
                     self.client.make_bucket(bucket)
-                    current_app.logger.info(f"Created bucket: {bucket}")
+                    logger.info(f"Created bucket: {bucket}")
                 else:
-                    current_app.logger.info(f"Bucket already exists: {bucket}")
+                    logger.info(f"Bucket already exists: {bucket}")
             except S3Error as e:
-                current_app.logger.error(f"Error creating bucket {bucket}: {e}")
+                logger.error(f"Error creating bucket {bucket}: {e}")
                 raise
     
     def upload_raw_image(self, client_id, case_id, filename, file_data, file_size):
@@ -58,7 +63,7 @@ class MinIOStorage:
         Returns:
             tuple: (storage_path, checksum_sha256)
         """
-        bucket = current_app.config['MINIO_BUCKET_RAW']
+        bucket = settings.MINIO_BUCKET_RAW
         object_name = f"{client_id}/{case_id}/{filename}"
         
         # Calculate SHA256 checksum
@@ -73,10 +78,10 @@ class MinIOStorage:
                 content_type='application/dicom'
             )
             storage_path = f"minio://{bucket}/{object_name}"
-            current_app.logger.info(f"Uploaded raw image: {storage_path}")
+            logger.info(f"Uploaded raw image: {storage_path}")
             return storage_path, checksum
         except S3Error as e:
-            current_app.logger.error(f"Error uploading raw image: {e}")
+            logger.error(f"Error uploading raw image: {e}")
             raise
     
     def upload_processed_image(self, client_id, case_id, filename, file_data, file_size, mime_type):
@@ -94,7 +99,7 @@ class MinIOStorage:
         Returns:
             str: storage_path
         """
-        bucket = current_app.config['MINIO_BUCKET_PROCESSED']
+        bucket = settings.MINIO_BUCKET_PROCESSED
         object_name = f"{client_id}/{case_id}/{filename}"
         
         try:
@@ -106,10 +111,10 @@ class MinIOStorage:
                 content_type=mime_type
             )
             storage_path = f"minio://{bucket}/{object_name}"
-            current_app.logger.info(f"Uploaded processed image: {storage_path}")
+            logger.info(f"Uploaded processed image: {storage_path}")
             return storage_path
         except S3Error as e:
-            current_app.logger.error(f"Error uploading processed image: {e}")
+            logger.error(f"Error uploading processed image: {e}")
             raise
     
     def download_file(self, bucket, object_name):
@@ -130,7 +135,7 @@ class MinIOStorage:
             response.release_conn()
             return data
         except S3Error as e:
-            current_app.logger.error(f"Error downloading file: {e}")
+            logger.error(f"Error downloading file: {e}")
             raise
     
     def generate_presigned_url(self, bucket, object_name, expires=3600):
@@ -153,7 +158,7 @@ class MinIOStorage:
             )
             return url
         except S3Error as e:
-            current_app.logger.error(f"Error generating presigned URL: {e}")
+            logger.error(f"Error generating presigned URL: {e}")
             raise
     
     def delete_file(self, bucket, object_name):
@@ -166,9 +171,9 @@ class MinIOStorage:
         """
         try:
             self.client.remove_object(bucket_name=bucket, object_name=object_name)
-            current_app.logger.info(f"Deleted file: {bucket}/{object_name}")
+            logger.info(f"Deleted file: {bucket}/{object_name}")
         except S3Error as e:
-            current_app.logger.error(f"Error deleting file: {e}")
+            logger.error(f"Error deleting file: {e}")
             raise
     
     def list_files(self, bucket, prefix=None):
@@ -186,7 +191,7 @@ class MinIOStorage:
             objects = self.client.list_objects(bucket_name=bucket, prefix=prefix)
             return [obj.object_name for obj in objects]
         except S3Error as e:
-            current_app.logger.error(f"Error listing files: {e}")
+            logger.error(f"Error listing files: {e}")
             raise
 
 

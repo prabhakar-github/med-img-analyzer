@@ -20,6 +20,10 @@
    ```bash
    pip install -r requirements.txt
    ```
+   
+   ```bash   
+   py -m pip install -r requirements.txt 
+   ```
 
 3. **Set up environment variables**
    ```bash
@@ -62,7 +66,11 @@
    ```bash
    python run.py
    ```
-
+   OR directly initiate FastAPI webserver...
+   ```bash   
+   py -m uvicorn app:app --host 0.0.0.0 --port 5000 --reload
+   ```
+   
 8. **Access the application**
    - Web Interface: http://localhost:5000
    - Login with credentials from MySQL `operators` table
@@ -80,45 +88,57 @@
 
 ```
 med-img-analyzer/
-├── app/
-│   ├── __init__.py           # Flask app factory
-│   ├── config.py             # Configuration
-│   ├── models.py             # SQLAlchemy ORM models
-│   ├── auth/                 # Authentication module
-│   │   ├── routes.py
-│   │   └── forms.py
-│   ├── upload/               # Upload module
-│   │   ├── routes.py
-│   │   ├── forms.py
-│   │   ├── validators.py     # DICOM validation
-│   │   └── processors.py     # DICOM processing
-│   ├── storage/              # MinIO integration
-│   │   └── minio_client.py
-│   └── templates/            # HTML templates
+├── README.md
 ├── requirements.txt
 ├── run.py
-├── .env.example
-└── my_sql.sql                # Database schema
+├── hash_password.py
+├── app/
+│   ├── __init__.py                 # FastAPI app factory and router registration
+│   ├── config.py                   # Environment-based application settings
+│   ├── database.py                 # Async SQLAlchemy engine/session setup
+│   ├── models.py                   # SQLAlchemy 2.0 ORM models
+│   ├── template_helpers.py         # Jinja templates and flash-message helpers
+│   │
+│   ├── auth/
+│   │   ├── __init__.py
+│   │   ├── forms.py                # Login-related constants
+│   │   └── routes.py               # FastAPI auth routes: login/logout/session auth
+│   │
+│   ├── upload/
+│   │   ├── __init__.py
+│   │   ├── forms.py                # Upload-related constants
+│   │   ├── routes.py               # FastAPI upload dashboard and upload handlers
+│   │   ├── validators.py           # DICOM/file validation logic
+│   │   └── processors.py           # DICOM-to-preview PNG processing
+│   │
+│   ├── storage/
+│   │   ├── __init__.py
+│   │   ├── minio_client.py         # MinIO object-storage client wrapper
+│   │   ├── my_sql.sql              # MySQL schema and seed data
+│   │   └── DB_Model.xlsx           # Database model/design spreadsheet
+│   │
+│   ├── templates/
+│   │   ├── __init__.py
+│   │   ├── base.html               # Shared Bootstrap layout
+│   │   ├── auth/
+│   │   │   └── login.html          # Operator login page
+│   │   └── upload/
+│   │       └── dashboard.html      # DICOM upload dashboard
+│   │
+│   └── test/
+│       └── test-connection-mysql.py
 ```
 
 
-**Core Components:**
-- **Flask Web Application** with modular architecture (auth, upload, storage modules)
-- **MySQL Integration** using SQLAlchemy ORM mapped to your existing schema
-- **MinIO Storage Client** for S3-compatible local storage of raw and processed images
-- **Authentication System** with login/logout, password hashing, and audit logging
-- **Multi-file Upload Form** supporting up to 50 DICOM files per session
-- **Real-time DICOM Validation** for format, file size, and required metadata tags
-- **DICOM Processing Pipeline** that extracts metadata and generates PNG preview images
-- **Bootstrap 5 UI** with responsive design and flash messages
+**Main Application Modules**
+- app/__init__.py: Creates the FastAPI app, configures session middleware, registers auth/upload routers.
+- app/database.py: Provides async MySQL sessions using SQLAlchemy + aiomysql.
+- app/auth/routes.py: Handles login/logout and session-based operator lookup.
+- app/upload/routes.py: Handles upload dashboard and DICOM file upload workflow.
+- app/storage/minio_client.py: Stores raw DICOM and processed PNG previews in MinIO.
+- app/upload/processors.py: Converts DICOM pixel data into PNG previews.
+- app/upload/validators.py: Validates file extension, size, DICOM tags, and modality.
 
-**Key Features:**
-- Secure operator authentication with audit trail
-- Dual storage: Raw DICOM files (.dcm) + Processed preview images (.png)
-- Comprehensive validation (file extension, size, DICOM format, required tags)
-- Audit logging for all data access (HIPAA/GDPR compliance ready)
-- Client management (hospitals, diagnostic centers, clinics)
-- SHA256 checksums for data integrity
 
 **Next Steps to Run:**
 1. Install dependencies: `pip install -r requirements.txt`

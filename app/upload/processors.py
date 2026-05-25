@@ -2,7 +2,10 @@ import pydicom
 import numpy as np
 from PIL import Image
 import io
-from flask import current_app
+import logging
+
+
+logger = logging.getLogger(__name__)
 
 
 class DICOMProcessor:
@@ -41,7 +44,7 @@ class DICOMProcessor:
             
             return pixel_array
         except Exception as e:
-            current_app.logger.error(f"Error extracting pixel array: {e}")
+            logger.error(f"Error extracting pixel array: {e}")
             raise
     
     @staticmethod
@@ -75,7 +78,7 @@ class DICOMProcessor:
             
             return pixel_array
         except Exception as e:
-            current_app.logger.error(f"Error normalizing pixel values: {e}")
+            logger.error(f"Error normalizing pixel values: {e}")
             raise
     
     @staticmethod
@@ -111,7 +114,7 @@ class DICOMProcessor:
             # Convert back to numpy array
             return np.array(image_resized)
         except Exception as e:
-            current_app.logger.error(f"Error resizing image: {e}")
+            logger.error(f"Error resizing image: {e}")
             raise
     
     @staticmethod
@@ -145,7 +148,7 @@ class DICOMProcessor:
             
             return img_byte_arr.getvalue()
         except Exception as e:
-            current_app.logger.error(f"Error converting to PNG: {e}")
+            logger.error(f"Error converting to PNG: {e}")
             raise
     
     @staticmethod
@@ -193,7 +196,7 @@ class DICOMProcessor:
             return png_bytes, metadata
             
         except Exception as e:
-            current_app.logger.error(f"Error processing DICOM to preview: {e}")
+            logger.error(f"Error processing DICOM to preview: {e}")
             raise
     
     @staticmethod

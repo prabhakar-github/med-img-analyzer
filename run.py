@@ -1,8 +1,8 @@
-import os
-from app import create_app
+import uvicorn
 
-# Create Flask application
-app = create_app(os.getenv('FLASK_CONFIG', 'default'))
+from app import app
+from app.config import settings
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    uvicorn.run('app:app', host='0.0.0.0', port=5000, reload=settings.DEBUG)

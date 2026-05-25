@@ -1,7 +1,7 @@
-from flask import current_app
 import pydicom
 from pydicom.errors import InvalidDicomError
-from werkzeug.datastructures import FileStorage
+
+from app.config import settings
 
 
 class DICOMValidationError(Exception):
@@ -23,7 +23,7 @@ def validate_file_extension(filename):
         return False
     
     return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in current_app.config['ALLOWED_EXTENSIONS']
+           filename.rsplit('.', 1)[1].lower() in settings.ALLOWED_EXTENSIONS
 
 
 def validate_file_size(file_size):
@@ -36,7 +36,7 @@ def validate_file_size(file_size):
     Returns:
         bool: True if valid, False otherwise
     """
-    max_size = current_app.config['MAX_CONTENT_LENGTH']
+    max_size = settings.MAX_CONTENT_LENGTH
     return file_size <= max_size
 
 
@@ -83,7 +83,7 @@ def validate_dicom_format(file_data):
                 metadata[tag] = str(getattr(dicom_file, tag))
         
         # Validate required tags
-        required_tags = current_app.config['REQUIRED_DICOM_TAGS']
+        required_tags = settings.REQUIRED_DICOM_TAGS
         missing_tags = [tag for tag in required_tags if not metadata.get(tag)]
         
         if missing_tags:
@@ -93,9 +93,9 @@ def validate_dicom_format(file_data):
         
         # Validate modality is in allowed list
         modality = metadata.get('Modality', '').upper()
-        if modality not in current_app.config['ALLOWED_MODALITIES']:
+        if modality not in settings.ALLOWED_MODALITIES:
             raise DICOMValidationError(
-                f"Invalid modality: {modality}. Allowed: {', '.join(current_app.config['ALLOWED_MODALITIES'])}"
+                f"Invalid modality: {modality}. Allowed: {', '.join(settings.ALLOWED_MODALITIES)}"
             )
         
         return metadata
@@ -106,12 +106,13 @@ def validate_dicom_format(file_data):
         raise DICOMValidationError(f"Error parsing DICOM file: {str(e)}")
 
 
-def validate_uploaded_file(file):
+def validate_uploaded_file(filename, file_data):
     """
     Perform comprehensive validation on uploaded file
     
     Args:
-        file: FileStorage object from Flask request
+        filename: Uploaded file name
+        file_data: Uploaded file bytes
         
     Returns:
         tuple: (is_valid, error_message, metadata)
@@ -119,24 +120,19 @@ def validate_uploaded_file(file):
     Raises:
         DICOMValidationError: If validation fails
     """
-    if not file:
+    if not filename or not file_data:
         raise DICOMValidationError("No file provided")
     
     # Validate file extension
-    if not validate_file_extension(file.filename):
+    if not validate_file_extension(filename):
         raise DICOMValidationError(
-            f"Invalid file extension. Allowed: {', '.join(current_app.config['ALLOWED_EXTENSIONS'])}"
+            f"Invalid file extension. Allowed: {', '.join(settings.ALLOWED_EXTENSIONS)}"
         )
-    
-    # Read file data
-    file.seek(0)
-    file_data = file.read()
-    file.seek(0)
     
     # Validate file size
     file_size = len(file_data)
     if not validate_file_size(file_size):
-        max_size_mb = current_app.config['MAX_CONTENT_LENGTH'] / (1024 * 1024)
+        max_size_mb = settings.MAX_CONTENT_LENGTH / (1024 * 1024)
         raise DICOMValidationError(
             f"File size exceeds maximum limit of {max_size_mb:.0f}MB"
         )
@@ -177,4 +173,4 @@ def validate_modality(modality):
     if not modality:
         return False
     
-    return modality.upper() in current_app.config['ALLOWED_MODALITIES']
+    return modality.upper() in settings.ALLOWED_MODALITIES

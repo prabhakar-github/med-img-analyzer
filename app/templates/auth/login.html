@@ -10,35 +10,20 @@
                 <h4><i class="bi bi-box-arrow-in-right"></i> Operator Login</h4>
             </div>
             <div class="card-body">
-                <form method="POST">
-                    {{ form.hidden_tag() }}
+                <form method="POST" action="{{ request.url_for('login_post') }}">
                     
                     <div class="mb-3">
-                        {{ form.username.label(class="form-label") }}
-                        {{ form.username(class="form-control", placeholder="Enter your username") }}
-                        {% if form.username.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.username.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        <label for="username" class="form-label">Username</label>
+                        <input type="text" id="username" name="username" class="form-control" placeholder="Enter your username" required minlength="3" maxlength="100">
                     </div>
                     
                     <div class="mb-3">
-                        {{ form.password.label(class="form-label") }}
-                        {{ form.password(class="form-control", placeholder="Enter your password") }}
-                        {% if form.password.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.password.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" id="password" name="password" class="form-control" placeholder="Enter your password" required>
                     </div>
                     
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary") }}
+                        <button type="submit" class="btn btn-primary">Login</button>
                     </div>
                 </form>
             </div>

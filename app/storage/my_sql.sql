@@ -83,6 +83,22 @@ CREATE TABLE raw_image_uploads (
         REFERENCES cases(id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+CREATE TABLE processed_images (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    case_id INT NOT NULL,
+    raw_image_id INT NOT NULL,
+    file_name_original VARCHAR(255) NOT NULL,
+    storage_path VARCHAR(2048) NOT NULL,
+    file_size_bytes BIGINT NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    processing_type VARCHAR(50) NOT NULL,
+    uploaded_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_processed_images_case FOREIGN KEY (case_id)
+        REFERENCES cases(id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT fk_processed_images_raw FOREIGN KEY (raw_image_id)
+        REFERENCES raw_image_uploads(id) ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
 
 -- ============================================================================
 -- 4. COMPLIANCE AND AUDIT LOGS
@@ -126,6 +142,8 @@ CREATE INDEX idx_cases_patient_lookup ON cases(client_id, patient_reference_id);
 
 -- Accelerates loading images associated with a single case folder
 CREATE INDEX idx_raw_images_case_id ON raw_image_uploads(case_id);
+CREATE INDEX idx_processed_images_case_id ON processed_images(case_id);
+CREATE INDEX idx_processed_images_raw_image_id ON processed_images(raw_image_id);
 
 
 

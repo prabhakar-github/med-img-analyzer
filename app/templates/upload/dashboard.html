@@ -10,65 +10,44 @@
                 <h4><i class="bi bi-cloud-upload"></i> Upload DICOM Images</h4>
             </div>
             <div class="card-body">
-                <form method="POST" enctype="multipart/form-data" id="uploadForm">
-                    {{ form.hidden_tag() }}
+                <form method="POST" action="{{ request.url_for('upload_files') }}" enctype="multipart/form-data" id="uploadForm">
                     
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            {{ form.client_id.label(class="form-label") }}
-                            {{ form.client_id(class="form-select") }}
-                            {% if form.client_id.errors %}
-                                <div class="text-danger mt-1">
-                                    {% for error in form.client_id.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            <label for="client_id" class="form-label">Client</label>
+                            <select id="client_id" name="client_id" class="form-select" required>
+                                {% for client in clients %}
+                                    <option value="{{ client.id }}">{{ client.name }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                         
                         <div class="col-md-6 mb-3">
-                            {{ form.modality.label(class="form-label") }}
-                            {{ form.modality(class="form-select") }}
-                            {% if form.modality.errors %}
-                                <div class="text-danger mt-1">
-                                    {% for error in form.modality.errors %}
-                                        <small>{{ error }}</small>
-                                    {% endfor %}
-                                </div>
-                            {% endif %}
+                            <label for="modality" class="form-label">Modality</label>
+                            <select id="modality" name="modality" class="form-select" required>
+                                {% for modality in modalities %}
+                                    <option value="{{ modality }}">{{ modality }}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                     
                     <div class="mb-3">
-                        {{ form.patient_reference_id.label(class="form-label") }}
-                        {{ form.patient_reference_id(class="form-control", placeholder="Enter anonymized patient reference ID") }}
-                        {% if form.patient_reference_id.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.patient_reference_id.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        <label for="patient_reference_id" class="form-label">Patient Reference ID</label>
+                        <input type="text" id="patient_reference_id" name="patient_reference_id" class="form-control" placeholder="Enter anonymized patient reference ID" required maxlength="100">
                         <small class="text-muted">This should be an anonymized identifier, not actual patient PHI.</small>
                     </div>
                     
                     <div class="mb-3">
-                        {{ form.dicom_files.label(class="form-label") }}
-                        {{ form.dicom_files(class="form-control", multiple="true", accept=".dcm") }}
-                        {% if form.dicom_files.errors %}
-                            <div class="text-danger mt-1">
-                                {% for error in form.dicom_files.errors %}
-                                    <small>{{ error }}</small>
-                                {% endfor %}
-                            </div>
-                        {% endif %}
+                        <label for="dicom_files" class="form-label">DICOM Files</label>
+                        <input type="file" id="dicom_files" name="dicom_files" class="form-control" multiple accept=".dcm" required>
                         <small class="text-muted">Select one or more .dcm files (max 50 files, 100MB each)</small>
                     </div>
                     
                     <div id="fileList" class="mb-3"></div>
                     
                     <div class="d-grid">
-                        {{ form.submit(class="btn btn-primary btn-lg") }}
+                        <button type="submit" class="btn btn-primary btn-lg">Upload Images</button>
                     </div>
                 </form>
             </div>
